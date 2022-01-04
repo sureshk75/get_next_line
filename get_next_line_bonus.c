@@ -6,82 +6,43 @@
 /*   By: schetty <schetty@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/21 02:44:27 by schetty           #+#    #+#             */
-/*   Updated: 2021/12/26 06:07:28 by schetty          ###   ########.fr       */
+/*   Updated: 2022/01/05 02:01:13 by schetty          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line_bonus.h"
 
-static char	*join_str(char *s1, char *s2)
+static char	*get_line(char *str)
 {
-	char	*ret;
-
-	if (!s1)
-		s1 = ft_strdup("");
-	if (!s1 || !s2)
-		return (NULL);
-	ret = ft_strjoin(s1, s2);
-	free(s1);
-	return (ret);
-}
-
-static char	*get_current_line(char *str)
-{
-	char	*ret;
-	int		i;
+	char	*is_nl;
 
 	if (!str[0])
 		return (NULL);
-	i = 0;
-	while (str[i] && str[i] != '\n')
-		i++;
-	ret = malloc(sizeof(char) * (i + 2));
-	if (!ret)
-		return (NULL);
-	i = 0;
-	while (str[i])
-	{
-		ret[i] = str[i];
-		if (str[i++] == '\n')
-			break ;
-	}
-	ret[i] = '\0';
-	return (ret);
+	is_nl = ft_strchr(str, '\n');
+	if (is_nl)
+		return (ft_substr(str, 0, (ft_strlen(str) - ft_strlen(is_nl)) + 1));
+	else
+		return (ft_substr(str, 0, ft_strlen(str)));
 }
 
 static char	*clean_str(char *str)
 {
 	char	*ret;
-	int		i;
-	int		j;
+	char	*is_nl;
 
-	i = 0;
-	while (str[i] && str[i] != '\n')
-		i++;
-	if (!str[i])
-	{
-		free(str);
-		return (NULL);
-	}
-	ret = malloc(sizeof(char) * ((ft_strlen(str) - i) + 1));
-	if (!ret)
-		return (NULL);
-	j = -1;
-	while (str[++i])
-		ret[++j] = str[i];
-	ret[++j] = '\0';
+	ret = NULL;
+	is_nl = ft_strchr(str, '\n');
+	if (is_nl && (is_nl[1]))
+		ret = ft_substr(is_nl, 1, ft_strlen(is_nl) - 1);
 	free(str);
 	return (ret);
 }
 
-static char	*read_buffer(int fd, char *str)
+static char	*read_buffer(int fd, char *buf, char *str)
 {
-	char	*buf;
 	int		bytes;
+	char	*tmp;
 
-	buf = malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (!buf)
-		return (NULL);
 	bytes = BUFFER_SIZE;
 	while (!ft_strchr(str, '\n') && bytes > 0)
 	{
@@ -89,7 +50,14 @@ static char	*read_buffer(int fd, char *str)
 		if (bytes != -1)
 		{
 			buf[bytes] = '\0';
-			str = join_str(str, buf);
+			if (!str)
+				str = ft_substr(buf, 0, ft_strlen(buf));
+			else
+			{
+				tmp = ft_strjoin(str, buf);
+				free(str);
+				str = tmp;
+			}
 		}
 	}
 	free(buf);
@@ -101,14 +69,18 @@ static char	*read_buffer(int fd, char *str)
 char	*get_next_line(int fd)
 {
 	static char	*str[OPEN_MAX];
+	char		*buf;
 	char		*ret;
 
 	if (fd < 0 || fd >= OPEN_MAX || BUFFER_SIZE <= 0)
 		return (0);
-	str[fd] = read_buffer(fd, str[fd]);
+	buf = malloc(sizeof(char) * (BUFFER_SIZE + 1));
+	if (!buf)
+		return (NULL);
+	str[fd] = read_buffer(fd, buf, str[fd]);
 	if (!str[fd])
 		return (NULL);
-	ret = get_current_line(str[fd]);
+	ret = get_line(str[fd]);
 	str[fd] = clean_str(str[fd]);
 	return (ret);
 }

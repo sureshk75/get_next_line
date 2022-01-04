@@ -6,7 +6,7 @@
 /*   By: schetty <schetty@student.42kl.edu.my>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/05/21 02:44:52 by schetty           #+#    #+#             */
-/*   Updated: 2021/12/26 05:51:24 by schetty          ###   ########.fr       */
+/*   Updated: 2022/01/05 01:56:55 by schetty          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,23 +25,6 @@ char	*ft_strchr(const char *s, int c)
 			return (NULL);
 	}
 	return ((char *)s + i);
-}
-
-char	*ft_strdup(const char *s)
-{
-	size_t	len;
-	char	*ret;
-
-	len = 0;
-	while (s[len])
-		len++;
-	ret = malloc(sizeof(char) * (len + 1));
-	if (!ret)
-		return (NULL);
-	ret[len] = '\0';
-	while (len--)
-		ret[len] = s[len];
-	return (ret);
 }
 
 char	*ft_strjoin(char const *s1, char const *s2)
@@ -70,7 +53,39 @@ size_t	ft_strlen(const char *s)
 	size_t	i;
 
 	i = 0;
-	while (s[i])
-		i++;
+	if (s)
+	{
+		while (s[i])
+			i++;
+	}
 	return (i);
+}
+
+char	*ft_substr(char const *s, unsigned int start, size_t len)
+{
+	size_t	s_len;
+	char	*dst;
+	size_t	i;
+
+	if (!s)
+		return (NULL);
+	s_len = 0;
+	while (s[s_len])
+		s_len++;
+	if (start > s_len)
+		len = 0;
+	else if (len > (s_len - start))
+		len = s_len - start;
+	dst = malloc(sizeof(char) * (len + 1));
+	if (!dst)
+		return (NULL);
+	i = -1;
+	while (++i < len + 1)
+		dst[i] = 0;
+	if (start < s_len)
+	{
+		while (len--)
+			dst[len] = s[start + len];
+	}
+	return (dst);
 }
